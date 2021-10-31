@@ -15,7 +15,6 @@
 using Semaphore = std::counting_semaphore;
 #else
 #include "zos/semaphore.h"
-
 template<unsigned int c=std::numeric_limits<unsigned int>::max()>
 using Semaphore = zos::SemaphoreT<c>;
 
@@ -31,12 +30,12 @@ class DataNode{
 public:
     DataNode(DataNode* _last=nullptr,DataNode* _next=nullptr):_last(_last),_next(_next),_data(nullptr),_capacity(0),_size(0){
         #ifdef ZOS_DEBUG
-        std::cout << this << "ZOS DataNode constructor" << std::endl;
+        std::cout << this << " ZOS DataNode constructor" << std::endl;
         #endif
     }
     virtual ~DataNode(){
         #ifdef ZOS_DEBUG
-        std::cout << this << "ZOS DataNode constructor" << std::endl;
+        std::cout << this << " ZOS DataNode constructor" << std::endl;
         #endif
         if(_capacity > 0){
             free(_data);

@@ -42,7 +42,6 @@ set(HEADER_FILES
     ${ZOS_HEADERS}
     )
 set(CPP_FILES
-    test_semaphore.cpp
     )
 set(SOURCE_FILES
     ${CPP_FILES}
@@ -53,7 +52,17 @@ set(LIBS
     Qt${QT_VERSION_MAJOR}::Core
     fmt::fmt
     )
-add_executable(test_semaphore
-  ${SOURCE_FILES}
-)
-target_link_libraries(test_semaphore ${LIBS})
+file(GLOB TEST_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_*.cpp
+    )
+foreach(test_file ${TEST_FILES})
+    file(RELATIVE_PATH test_file_name ${CMAKE_CURRENT_SOURCE_DIR} ${test_file})
+    string( REPLACE ".cpp" "" test_name ${test_file_name} )
+    message("markdebug : " ${test_file} " -- " ${test_name})
+
+    add_executable(${test_name}
+        ${test_file_name}
+        ${SOURCE_FILES}
+    )
+    target_link_libraries(${test_name} ${LIBS})
+endforeach()
