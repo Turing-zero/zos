@@ -9,6 +9,7 @@
 
 #include "zos/config.h"
 #include "zos/interface.h"
+#include "zos/log.h"
 
 #ifndef ZOS_USE_CUSTOM_SEMAPHORE
 #include <semaphore>
@@ -60,19 +61,19 @@ public:
 class Data:public IData,public DataNode{
 public:
     Data():DataNode(){
-        #ifdef ZSPLUGIN_DEBUG
-        std::cout << this << "ZOS Data constructor" << std::endl;
+        #ifdef ZOS_DEBUG
+        std::cout << this << " ZOS Data constructor" << std::endl;
         #endif
     }
     Data(const Data& data){
-        #ifdef ZSPLUGIN_DEBUG
-        std::cout << this << "ZOS Data copy constructor" << std::endl;
+        #ifdef ZOS_DEBUG
+        std::cout << this << " ZOS Data copy constructor" << std::endl;
         #endif
         store(data);
     }
     virtual ~Data(){
-        #ifdef ZSPLUGIN_DEBUG
-        std::cout << this << "ZOS Data  destructor" << std::endl;
+        #ifdef ZOS_DEBUG
+        std::cout << this << " ZOS Data destructor" << std::endl;
         #endif
     }
     // self thread-safe
@@ -110,19 +111,19 @@ protected:
     mutable std::shared_mutex _mutex;
 };
 
-template<unsigned int max_capacity=std::numeric_limits<unsigned int>::max()>
+template<unsigned int _max_capacity=std::numeric_limits<unsigned int>::max()>
 class DataQueue:public IData{
 public:
-    DataQueue():_size(0),_capacity(1),_max_capacity(max_capacity),_start(new DataNode()),_end(_start){
-        static_assert(max_capacity>0,"ZOS:max_capacity of DataQueue should be positive.");
-        #ifdef ZSPLUGIN_DEBUG
+    DataQueue():_size(0),_capacity(1),_start(new DataNode()),_end(_start){
+        static_assert(_max_capacity>0,"ZOS:max_capacity of DataQueue should be positive.");
+        #ifdef ZOS_DEBUG
         std::cout << this << " ZOS DataQueue constructor" << std::endl;
         #endif
         _start->_last = _start;
         _start->_next = _start;
     }
     virtual ~DataQueue(){
-        #ifdef ZSPLUGIN_DEBUG
+        #ifdef ZOS_DEBUG
         std::cout << this << " ZOS DataQueue destructor" << std::endl;
         #endif
         while(_capacity>1){
@@ -137,10 +138,10 @@ public:
         p.store(_start->_data,_start->_size);
         _start = _start->_next;
         _size--;
-        #ifdef ZSPLUGIN_DEBUG
-            std::cout << this << " ZOS DataQueue popTo()" << std::endl;
+        #ifdef ZOS_DEBUG
+            std::cout << this << " ZOS DataQueue finish pop() ,size=" << _size << ",capa=" << _capacity << std::endl;
             if(_size < 0){
-                std::cout << this << "size < 0 after popTo(" << &p << "). _size=" << _size << ", _capacity=" << _capacity << std::endl;
+                std::cout << this << "size < 0 after pop(" << &p << "). _size=" << _size << ", _capacity=" << _capacity << std::endl;
             }
         #endif
     }
@@ -157,6 +158,7 @@ public:
             storeNode = _end;
             _end = _end->_next;
             _start = _start->_next;
+            _size--;
         }else if(_size < _capacity){
             storeNode = _end;
             _end = _end->_next;
@@ -170,9 +172,6 @@ public:
         if(size > 0)
             memcpy(storeNode->_data,data,size);
         _size++;
-        #ifdef ZSPLUGIN_DEBUG
-            std::cout << this << " ZOS DataQueue store() " << storeNode << ' ' << data << ", size=" << _size << ", capacity=" << _capacity << std::endl;
-        #endif
     }
     virtual unsigned long size(){
         std::shared_lock<std::shared_mutex> lock(_mutex);
@@ -181,7 +180,6 @@ public:
 protected:
     unsigned int _size;
     unsigned int _capacity;
-    unsigned int _max_capacity;
     DataNode* _start;
     DataNode* _end;
     mutable std::shared_mutex _mutex;
@@ -190,8 +188,16 @@ protected:
 template<unsigned int max_capacity=std::numeric_limits<unsigned int>::max()>
 class SemaData:public ISemaData{
 public:
-    SemaData():_semaphore(0){};
-    virtual ~SemaData() = default;
+    SemaData():_semaphore(0){
+        #ifdef ZOS_DEBUG
+        std::cout << this << " ZOS SemaData constructor. capa : " << max_capacity << std::endl; 
+        #endif
+    };
+    virtual ~SemaData(){
+        #ifdef ZOS_DEBUG
+        std::cout << this << " ZOS SemaData destructor." << std::endl; 
+        #endif
+    };
 //    SemaData(const SemaData&) = delete;
     virtual void pop(Data& p) override{
         _semaphore.acquire();

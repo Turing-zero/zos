@@ -24,6 +24,9 @@ public:
     Node() = delete;
     Node(const Node&) = delete;
     virtual ~Node(){
+        for(auto&& it:this->_databox){
+
+        }
         // TODO
         #ifdef ZOS_DEBUG
         std::cout << this << ' ' << this->_name << " zos::Node destructor" << std::endl;
@@ -31,7 +34,17 @@ public:
     }
     const std::string& name() const{ return _name; }
     virtual void run() = 0;
-
+    virtual void start() final{
+        _t = std::thread([=,this]{
+            run();
+            #ifdef ZOS_DEBUG
+            std::cout << this << ' ' << this->_name << " has exit." << std::endl;
+            #endif
+        });
+    }
+    virtual void join() final{
+        _t.join();
+    }
     template<unsigned int buffer_size=1>
     void declare_receive(const std::string& msg){
         #ifdef ZOS_DEBUG
@@ -56,8 +69,26 @@ public:
         }
         _subscribers[msg] = {};
     }
-    virtual void publish(const std::string& msg, const void* data = nullptr, const unsigned long size = 0) final{}
-    virtual void receive(const std::string& msg,Data& data) final{}
+    virtual void publish(const std::string& msg, const void* data = nullptr, const unsigned long size = 0) final{
+        std::shared_lock s_lock(_mutex_subscriber);
+        auto it = _subscribers.find(msg);
+        if(it != _subscribers.end()){
+            for(auto p:_subscribers[msg]){
+                p.second->store(data,size);
+            }
+        }
+    }
+    virtual void publish(const std::string& msg,const Data& data) final{
+        this->publish(msg,data.data(),data.size());
+    }
+    virtual void receive(const std::string& msg,Data& data) final{
+        auto&& it = _databox.find(msg);
+        if (it == _databox.end()){
+            std::cerr << "ERROR : didn't DECLARE to RECEIVE this kind of message, check your message type : " << msg << std::endl;
+            return;
+        }
+        it->second->pop(data);
+    }
     virtual bool try_receive(const std::string& msg, Data& data) final{}
     virtual void link(Node* n,const std::string& msg) final{
         #ifdef ZOS_DEBUG

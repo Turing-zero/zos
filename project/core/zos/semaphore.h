@@ -7,13 +7,13 @@
 #include <mutex>
 #include <condition_variable>
 namespace zos{
-template<unsigned int max_capacity=std::numeric_limits<unsigned int>::max()>
+template<unsigned int _max_capacity=std::numeric_limits<unsigned int>::max()>
 class SemaphoreT:public ISema {
 public:
     SemaphoreT(unsigned int count = 0)
-        : count_(count), _max_capacity(max_capacity){
+        : count_(count){
         #ifdef ZOS_DEBUG
-        std::cout << this << " SemaphoreT constructor" << std::endl;
+        std::cout << this << " SemaphoreT constructor,capa : " << _max_capacity << std::endl;
         #endif
     }
     SemaphoreT(const SemaphoreT& s):count_(0){
@@ -33,9 +33,9 @@ public:
 //        cv_.notify_all();
 //    }
     virtual void release() override {
-        std::unique_lock lock(mutex_);
+        std::scoped_lock lock(mutex_);
         if (count_ < _max_capacity){
-            count_+=1;
+            count_++;
             cv_.notify_one();
         }
     }
@@ -64,7 +64,6 @@ private:
     std::mutex mutex_;
     std::condition_variable cv_;
     unsigned int count_;
-    unsigned int _max_capacity;
 };
 }// namespace zos
 #endif // __ZOS_SEMAPHORE_H__
