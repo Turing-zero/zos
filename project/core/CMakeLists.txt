@@ -7,9 +7,9 @@ option(ZOS_USE_CUSTOM_SEMAPHORE "use custom semaphore." ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
+# set(CMAKE_AUTOUIC ON)
+# set(CMAKE_AUTOMOC ON)
+# set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,13 +19,11 @@ if(ZOS_DEBUG)
     add_definitions(-DZOS_DEBUG)
 endif()
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Threads REQUIRED)
 
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${fmt_INCLUDE_DIRS}
 )
 if(ZOS_USE_CUSTOM_SEMAPHORE)
@@ -49,7 +47,6 @@ set(SOURCE_FILES
     )
 set(LIBS
     Threads::Threads
-    Qt${QT_VERSION_MAJOR}::Core
     fmt::fmt
     )
 file(GLOB TEST_FILES

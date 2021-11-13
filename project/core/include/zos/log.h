@@ -14,7 +14,8 @@ struct __Log{
         std::string total_filename{lo.file_name()};
         auto found = total_filename.find_last_of('/');
         std::string filename{found!=std::string::npos ? total_filename.substr(found+1) : std::move(total_filename)};
-        fmt::print("{}({}:{})`{}`:",filename,lo.line(),lo.column(),lo.function_name());
+        // fmt::print("{}({}:{})`{}`:",filename,lo.line(),lo.column(),lo.function_name());
+        fmt::print("{}({}:{}):",filename,lo.line(),lo.column());
         fmt::print(s,ts...);
     }
     static void print_timestamp(){

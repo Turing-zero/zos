@@ -13,18 +13,18 @@ public:
     SemaphoreT(unsigned int count = 0)
         : count_(count){
         #ifdef ZOS_DEBUG
-        std::cout << this << " SemaphoreT constructor,capa : " << _max_capacity << std::endl;
+        zos::log("{} SemaphoreT constructor,capa : {}\n",fmt::ptr(this),_max_capacity);
         #endif
     }
     SemaphoreT(const SemaphoreT& s):count_(0){
         #ifdef ZOS_DEBUG
-        std::cout << this << " SemaphoreT copy constructor" << std::endl;
+        zos::log("{} SemaphoreT copy ctor\n",fmt::ptr(this));
         #endif
     }
     virtual ~SemaphoreT(){
 //        notify_current();
         #ifdef ZOS_DEBUG
-        std::cout << this << " SemaphoreT destructor" << std::endl;
+        zos::log("{} SemaphoreT destructor\n",fmt::ptr(this));
         #endif
     }
 //    virtual void notify_current() override{

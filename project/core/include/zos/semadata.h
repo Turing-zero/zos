@@ -21,9 +21,6 @@ using Semaphore = zos::SemaphoreT<c>;
 
 #endif // ZOS_USE_DEFAULT_SEMAPHORE
 
-#ifdef ZOS_DEBUG
-#include <iostream>
-#endif
 namespace zos{
 
 // thread unsafe base node
@@ -31,12 +28,12 @@ class DataNode{
 public:
     DataNode(DataNode* _last=nullptr,DataNode* _next=nullptr):_last(_last),_next(_next),_data(nullptr),_capacity(0),_size(0){
         #ifdef ZOS_DEBUG
-        std::cout << this << " ZOS DataNode constructor" << std::endl;
+        zos::log("{} ZOS DataNode constructor\n",fmt::ptr(this));
         #endif
     }
     virtual ~DataNode(){
         #ifdef ZOS_DEBUG
-        std::cout << this << " ZOS DataNode constructor" << std::endl;
+        zos::log("{} ZOS Data destructor\n",fmt::ptr(this));
         #endif
         if(_capacity > 0){
             free(_data);
@@ -62,18 +59,18 @@ class Data:public IData,public DataNode{
 public:
     Data():DataNode(){
         #ifdef ZOS_DEBUG
-        std::cout << this << " ZOS Data constructor" << std::endl;
+        zos::log("{} ZOS Data constructor\n",fmt::ptr(this));
         #endif
     }
     Data(const Data& data){
         #ifdef ZOS_DEBUG
-        std::cout << this << " ZOS Data copy constructor" << std::endl;
+        zos::log("{} ZOS Data copy constructor\n",fmt::ptr(this));
         #endif
         store(data);
     }
     virtual ~Data(){
         #ifdef ZOS_DEBUG
-        std::cout << this << " ZOS Data destructor" << std::endl;
+        zos::log("{} ZOS Data destructor\n",fmt::ptr(this));
         #endif
     }
     // self thread-safe
@@ -117,14 +114,14 @@ public:
     DataQueue():_size(0),_capacity(1),_start(new DataNode()),_end(_start){
         static_assert(_max_capacity>0,"ZOS:max_capacity of DataQueue should be positive.");
         #ifdef ZOS_DEBUG
-        std::cout << this << " ZOS DataQueue constructor" << std::endl;
+        zos::log("{} ZOS DataQueue constructor\n",fmt::ptr(this));
         #endif
         _start->_last = _start;
         _start->_next = _start;
     }
     virtual ~DataQueue(){
         #ifdef ZOS_DEBUG
-        std::cout << this << " ZOS DataQueue destructor" << std::endl;
+        zos::log("{} ZOS DataQueue destructor\n",fmt::ptr(this));
         #endif
         while(_capacity>1){
             _start = _start->_next;
@@ -139,9 +136,9 @@ public:
         _start = _start->_next;
         _size--;
         #ifdef ZOS_DEBUG
-            std::cout << this << " ZOS DataQueue finish pop() ,size=" << _size << ",capa=" << _capacity << std::endl;
+            zos::log("{} ZOS DataQueue finish pop() ,size={},capa={}\n",fmt::ptr(this),_size,_capacity);
             if(_size < 0){
-                std::cout << this << "size < 0 after pop(" << &p << "). _size=" << _size << ", _capacity=" << _capacity << std::endl;
+                zos::log("{} size < 0 after pop({}). _size={}, _capacity={}\n",fmt::ptr(this),fmt::ptr(&p),_size,_capacity);
             }
         #endif
     }
@@ -190,12 +187,12 @@ class SemaData:public ISemaData{
 public:
     SemaData():_semaphore(0){
         #ifdef ZOS_DEBUG
-        std::cout << this << " ZOS SemaData constructor. capa : " << max_capacity << std::endl; 
+        zos::log("{} ZOS SemaData constructor. capa : {}\n",fmt::ptr(this),max_capacity);
         #endif
     };
     virtual ~SemaData(){
         #ifdef ZOS_DEBUG
-        std::cout << this << " ZOS SemaData destructor." << std::endl; 
+        zos::log("{} ZOS SemaData destructor.\n",fmt::ptr(this));
         #endif
     };
 //    SemaData(const SemaData&) = delete;
