@@ -15,7 +15,11 @@ public:
             buffer.store(msg.c_str(),msg.size());
             publish("msg",buffer);
             zos::log("after publish {}\n",count);
-            std::this_thread::sleep_for( 1ms );
+            if(count < 3)continue;
+            if(count == 3) std::this_thread::sleep_for( 1000ms );
+            else{
+                std::this_thread::sleep_for( 1ms );
+            }
             if(count > 10) break;
         }
     }
@@ -26,6 +30,7 @@ public:
         declare_receive<2>("msg");
     }
     void run() override{
+        std::this_thread::sleep_for( 300ms );
         zos::Data buffer;
         while(true){
             receive("msg",buffer);
