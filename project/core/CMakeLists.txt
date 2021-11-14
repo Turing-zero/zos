@@ -28,13 +28,9 @@ include_directories(
 )
 if(ZOS_USE_CUSTOM_SEMAPHORE)
     add_definitions(-DZOS_USE_CUSTOM_SEMAPHORE)
-    set(ZOS_HEADERS
-        ${ZOS_HEADERS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/zos/*.h
-        )
 endif()
 file(GLOB ZOS_HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/zos/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/zos/*.h
     )
 set(HEADER_FILES
     ${ZOS_HEADERS}

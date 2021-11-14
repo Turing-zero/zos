@@ -210,16 +210,30 @@ public:
     virtual void acquire() override{
         _semaphore.acquire();
     }
-    virtual bool try_acquire_for(unsigned int _dur=1) override{
-        return _semaphore.try_acquire_for(_dur * __timestep);
-    }
-//    template<class Rep, class Period>
-//    bool try_acquire_for( const std::chrono::duration<Rep, Period>& rel_time ){
-//        return _semaphore.try_acquire_for(rel_time);
-//    }
     virtual bool try_acquire() override{
         return _semaphore.try_acquire();
     }
+    virtual bool try_acquire_for(unsigned int _dur=1) override{
+        return _semaphore.try_acquire_for(_dur * __timestep);
+    }
+    virtual bool try_pop(Data& p) override{
+        auto res = _semaphore.try_acquire();
+        if (res) {
+            _data.pop(p);
+        }
+        return res;
+    }
+    virtual bool try_pop_for(Data& p, unsigned int _dur) override{
+        auto res = _semaphore.try_acquire_for(_dur * __timestep);
+        if (res) {
+            _data.pop(p);
+        }
+        return res;
+    }
+    //    template<class Rep, class Period>
+    //    bool try_acquire_for( const std::chrono::duration<Rep, Period>& rel_time ){
+    //        return _semaphore.try_acquire_for(rel_time);
+    //    }
 private:
     DataQueue<max_capacity> _data;
     Semaphore<max_capacity> _semaphore;

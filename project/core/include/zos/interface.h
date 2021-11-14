@@ -25,6 +25,8 @@ class ISemaData:public ISema,public IData{
 public:
     ISemaData() = default;
     virtual ~ISemaData() = default;
+    virtual bool try_pop(Data&) = 0;
+    virtual bool try_pop_for(Data&,unsigned int) = 0; 
 //    ISemaData(const ISemaData&) = delete;
 };
 }// namespace zos;

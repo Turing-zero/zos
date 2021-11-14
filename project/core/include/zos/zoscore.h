@@ -91,7 +91,15 @@ public:
         it->second->pop(data);
     }
     virtual bool try_receive(const std::string& msg, Data& data) final{
-
+        std::shared_lock s_lock(this->_mutex_databox);
+        auto &&it = _databox.find(msg);
+        if (it == _databox.end())
+        {
+            std::cerr << "ERROR : didn't DECLARE to RECEIVE this kind of message, check your message type : " << msg << std::endl;
+            return false;
+        }
+        auto res = it->second->try_pop(data);
+        return res;
     }
     virtual void link(Node* n,const std::string& msg) final{
         std::unique_lock u_lock(this->_mutex_subscriber);
