@@ -28,10 +28,10 @@ int main(){
     A a1("A111"),a2("A222");
     B b;
     B* pb = &b;
-    a1.link(&b,"msg");
-    a2.link(pb,"msg");
-    a1.link(pb,"msg");
-    a1.unlink(pb,"msg");
-    a1.unlink(pb,"msg");
+    a1.link("msg",&b);
+    a2.link("msg",pb);
+    a1.link("msg",pb);
+    a1.unlink("msg",pb);
+    a1.unlink("msg",pb);
     return 0;
 }

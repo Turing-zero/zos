@@ -100,10 +100,8 @@ int main()
     A a;
     B b;
     C c;
-    a.link(&b, "msg");
-    a.link(&b, "msg2");
-    a.link(&c, "msg");
-    a.link(&c, "msg2");
+    a.link("msg",&b,&c);
+    a.link("msg2",&b,&c);
     c.start();
     b.start();
     a.start();

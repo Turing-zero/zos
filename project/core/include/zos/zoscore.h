@@ -10,6 +10,7 @@
 #include "zos/token.h"
 #include "zos/semadata.h"
 #include "zos/log.h"
+#include "zos/meta.h"
 
 #include <iostream>
 namespace zos{
@@ -101,43 +102,52 @@ public:
         auto res = it->second->try_pop(data);
         return res;
     }
-    virtual void link(Node* n,const std::string& msg) final{
+    template<typename... Ts>
+    typename std::enable_if_t<std::conjunction_v<std::is_convertible<Ts,Node*>...>,void>
+    link(const std::string& msg,Ts... nodes){
         std::unique_lock u_lock(this->_mutex_subscriber);
-        std::shared_lock s_lock(n->_mutex_databox);
         auto it = _subscribers.find(msg);
         if (it == _subscribers.end()){
             std::cerr << "ERROR : didn't DECLARE to PUBLISH message : " << msg << std::endl;
             return;
         }
-        if (auto iit = it->second.find(n);iit != it->second.end()){
-            std::cerr << "ERROR : already LINKed this message : [" << msg << "] before, maybe some error?" << std::endl;
-            return;
+        for(auto n : {static_cast<Node*>(nodes)...}){
+            std::shared_lock s_lock(n->_mutex_databox);
+            if (auto iit = it->second.find(n);iit != it->second.end()){
+                std::cerr << "ERROR : already LINKed this message : [" << msg << "] before, maybe some error?" << std::endl;
+                return;
+            }
+            auto iit = n->_databox.find(msg);
+            if(iit == n->_databox.end()){
+                std::cerr << "ERROR : didn't DECLARE to STORE this kind of message, check your message type : " << msg << std::endl;
+                return;
+            }
+            it->second.insert(std::pair(n,iit->second));
+            zos::log("link : {} [{}] --> {}\n",this->_name,msg,n->_name);
         }
-        auto iit = n->_databox.find(msg);
-        if(iit == n->_databox.end()){
-            std::cerr << "ERROR : didn't DECLARE to STORE this kind of message, check your message type : " << msg << std::endl;
-            return;
-        }
-        zos::log("link : {} [{}] --> {}\n",this->_name,msg,n->_name);
-        it->second.insert(std::pair(n,iit->second));
         #ifdef ZOS_DEBUG
         zos::log(" link success, total subscribers of [{}] in {} : {}\n",msg,this->_name,it->second.size());
         #endif
     }
-    virtual void unlink(Node* n,const std::string& msg) final{
+    template<typename... Ts>
+    typename std::enable_if_t<std::conjunction_v<std::is_convertible<Ts,Node*>...>,void>
+    unlink(const std::string& msg,Ts... nodes){
         std::unique_lock lock(_mutex_subscriber);
         auto it = _subscribers.find(msg);
         if (it == _subscribers.end()){
             std::cerr << "ERROR : didn't DECLARE to PUBLISH message : " << msg << std::endl;
             return;
         }
-        auto iit = it->second.find(n);
-        if (iit == it->second.end()){
-            std::cerr << "ERROR : didn't LINK this message : " << msg << std::endl;
-            return;
+        for(auto n : {static_cast<Node*>(nodes)...}){
+            std::shared_lock s_lock(n->_mutex_databox);
+            auto iit = it->second.find(n);
+            if (iit == it->second.end()){
+                std::cerr << "ERROR : didn't LINK this message : " << msg << std::endl;
+                return;
+            }
+            zos::log("unlink : {} [{}] -\\-> {}\n",this->_name,msg,n->_name);
+            it->second.erase(iit);
         }
-        zos::log("unlink : {} [{}] -\\-> {}\n",this->_name,msg,n->_name);
-        it->second.erase(iit);
         #ifdef ZOS_DEBUG
         zos::log(" unlink success, total subscribers of [{}] in {} : {}",msg,this->_name,it->second.size());
         #endif
