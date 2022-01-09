@@ -21,10 +21,13 @@ endif()
 
 find_package(fmt REQUIRED)
 find_package(Threads REQUIRED)
+find_package(Protobuf REQUIRED)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${fmt_INCLUDE_DIRS}
+    ${Protobuf_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 if(ZOS_USE_CUSTOM_SEMAPHORE)
     add_definitions(-DZOS_USE_CUSTOM_SEMAPHORE)
@@ -37,6 +40,12 @@ set(HEADER_FILES
     )
 set(CPP_FILES
     )
+
+file(GLOB PB_FILES 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/zos/protocol/*.proto
+    )
+PROTOBUF_GENERATE_CPP(PB_CPP PB_HEADER ${PB_FILES})
+
 set(SOURCE_FILES
     ${CPP_FILES}
     ${HEADER_FILES}
@@ -51,11 +60,22 @@ file(GLOB TEST_FILES
 foreach(test_file ${TEST_FILES})
     file(RELATIVE_PATH test_file_name ${CMAKE_CURRENT_SOURCE_DIR} ${test_file})
     string( REPLACE ".cpp" "" test_name ${test_file_name} )
-    message("markdebug : " ${test_file} " -- " ${test_name})
+    message("get exe : " ${test_file} " -- " ${test_name})
+    set(addition_files)
+    set(addition_libs)
+
+    if(test_name STREQUAL "test_pb")
+        file(GLOB addition_files 
+            ${PB_HEADER}
+            ${PB_CPP}
+            )
+        set(addition_libs ${Protobuf_LIBRARY})
+    endif()
 
     add_executable(${test_name}
         ${test_file_name}
         ${SOURCE_FILES}
+        ${addition_files}
     )
-    target_link_libraries(${test_name} ${LIBS})
+    target_link_libraries(${test_name} ${LIBS} ${addition_libs})
 endforeach()
