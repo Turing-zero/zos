@@ -2,4 +2,5 @@
 ZJUNlict's Open Source Project
 
 ## dependency
-* nlohmann-json-dev
+* `libasio-dev` using by socket
+* `nlohmann-json-dev`
