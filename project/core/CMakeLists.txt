@@ -27,7 +27,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${fmt_INCLUDE_DIRS}
     ${Protobuf_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_BINARY_DIR}/proto
 )
 if(ZOS_USE_CUSTOM_SEMAPHORE)
     add_definitions(-DZOS_USE_CUSTOM_SEMAPHORE)
@@ -41,10 +41,26 @@ set(HEADER_FILES
 set(CPP_FILES
     )
 
-file(GLOB PB_FILES 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/zos/protocol/*.proto
-    )
-PROTOBUF_GENERATE_CPP(PB_CPP PB_HEADER ${PB_FILES})
+set(PB_INPUT_DIR ${CMAKE_SOURCE_DIR}/include/zos/protocol)
+set(PB_OUTPUT_DIR ${CMAKE_BINARY_DIR}/proto)
+file(MAKE_DIRECTORY ${PB_OUTPUT_DIR})
+file(GLOB PB_FILES ${PB_INPUT_DIR}/*.proto)
+foreach(file ${PB_FILES})
+    set(PB_ARGS "--proto_path=\"${PB_INPUT_DIR}\" --cpp_out=\"${PB_OUTPUT_DIR}\" \"${file}\"")
+    execute_process(COMMAND ${PB_CMD} ${PROTOBUF_PROTOC_EXECUTABLE} --proto_path=${PB_INPUT_DIR} --cpp_out=${PB_OUTPUT_DIR} ${file}
+                    RESULT_VARIABLE PB_CMD_RESULT)
+endforeach()
+function(get_pb_file H CPP)
+	list(APPEND PH ${ARGN})
+	list(APPEND PC ${ARGN})
+	list(TRANSFORM PH PREPEND ${CMAKE_BINARY_DIR}/proto/)
+	list(TRANSFORM PH APPEND .pb.h)
+	list(TRANSFORM PC PREPEND ${CMAKE_BINARY_DIR}/proto/)
+	list(TRANSFORM PC APPEND .pb.cc)
+	set(${H} ${PH} PARENT_SCOPE)
+	set(${CPP} ${PC} PARENT_SCOPE)
+endfunction()
+# PROTOBUF_GENERATE_CPP(PB_CPP PB_HEADER ${PB_FILES})
 
 set(SOURCE_FILES
     ${CPP_FILES}
@@ -75,6 +91,7 @@ foreach(test_file ${TEST_FILES})
     set(addition_libs)
 
     if(test_name STREQUAL "test_pb")
+        get_pb_file(PB_HEADER PB_CPP zos)
         file(GLOB addition_files 
             ${PB_HEADER}
             ${PB_CPP}
