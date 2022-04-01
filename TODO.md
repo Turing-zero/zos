@@ -1,6 +1,7 @@
 * zos manager
 * zos thread
-    * [ ] publisher & subscriber
+    * [ ] publisher (alter for string map query)
+    * [ ] threadpool & msg callback
 * zos process
     * [ ] UDP port
     * [ ] protocol&msg name

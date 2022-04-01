@@ -5,6 +5,7 @@ namespace zos{
 namespace config{
     using namespace std::chrono_literals;
     constexpr auto timestep = 100ms;
+    constexpr int threadpool_nums = 12;
 }// zos::details
 constexpr auto __timestep = config::timestep;
 }// zos

@@ -2,15 +2,17 @@
 #define __ZOS_UDP_SOCKET_H__
 #include <string>
 #include <array>
-#include <functional>
 #include <asio.hpp>
 #include <fmt/core.h>
-#include "utils/singleton.hpp"
+
+#include "zos/meta.h"
+
+#include "utils/singleton.h"
 
 namespace zos{
 using __io = Singleton<asio::io_context>;
 namespace udp{
-using __callback_type = std::function<void(const void*,size_t)>;
+using __callback_type = zos::meta::socket_callback_type;
 using endpoint=asio::ip::udp::endpoint;
 using address = asio::ip::address;
 class socket{
@@ -36,10 +38,27 @@ public:
         );
     }
     ~socket() = default;
-    // use for sender
     void join_multicast(const char* multicast_address){
+        _socket.set_option(asio::ip::udp::socket::reuse_address(true));
         _socket.set_option(asio::ip::multicast::join_group(asio::ip::address::from_string(multicast_address)));
     }
+    void set_callback(const __callback_type& f){
+        _callback = std::bind(f,std::placeholders::_1,std::placeholders::_2);
+    }
+    bool try_bind(){
+        std::error_code ec;
+        _socket.bind(_listen_ep,ec);
+        std::cout << fmt::format("first output ec {}:{}",ec.value(),ec.message()) << std::endl;
+        if(ec.value() != 0){
+            std::cerr << fmt::format("get error {}:{}",ec.value(),ec.message()) << std::endl;
+            return false;
+        }
+        _socket.async_receive_from(asio::buffer(_data,MAX_LENGTH),_received_ep
+            , std::bind(&socket::handle_receive_from, this, std::placeholders::_1, std::placeholders::_2)
+        );
+        return true;
+    }
+    // use for sender
     void send_to(const std::string& str,const asio::ip::udp::endpoint& endpoint){
         _socket.send_to(asio::buffer(str.c_str(),str.size()),endpoint);
     }
