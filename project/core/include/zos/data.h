@@ -1,6 +1,8 @@
 #ifndef __ZOS_DATA_H__
 #define __ZOS_DATA_H__
 
+#include <cstdlib>
+#include <mutex>
 #include <shared_mutex>
 
 #include "zos/datanode.h"
@@ -16,7 +18,7 @@ public:
     }
     Data(const Data& data){
         #ifdef ZOS_DEBUG
-        zos::log("{} ZOS Data COPY constructor from {}\n",fmt::ptr(this),fmt::ptr(&data));
+        zos::log("{} COPY ZOS Data constructor from {}\n",fmt::ptr(this),fmt::ptr(&data));
         #endif
         resize(data._size);
         if(data._size > 0)
@@ -24,7 +26,7 @@ public:
     }
     Data(Data&& data){
         #ifdef ZOS_DEBUG
-        zos::log("{} ZOS Data MOVE constructor from {}\n",fmt::ptr(this),fmt::ptr(&data));
+        zos::log("{} MOVE ZOS Data constructor from {}\n",fmt::ptr(this),fmt::ptr(&data));
         #endif
         std::unique_lock<std::shared_mutex> lock(data._mutex);
         _last = data._last;
@@ -48,6 +50,11 @@ public:
     virtual void pop(Data& p) override{
         std::unique_lock<std::shared_mutex> lock(_mutex);
         p.store(this->data(),this->_size);
+        resize(0);
+    }
+    virtual void pop(Data* p) override{
+        std::unique_lock<std::shared_mutex> lock(_mutex);
+        p->store(this->data(),this->size());
         resize(0);
     }
     virtual void copyTo(Data* p){

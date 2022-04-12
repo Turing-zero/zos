@@ -18,7 +18,7 @@ public:
     DataNode(DataNode&&)=default;
     virtual ~DataNode(){
         #ifdef ZOS_DEBUG
-        zos::log("{} ZOS Data destructor\n",fmt::ptr(this));
+        zos::log("{} ZOS DataNode destructor\n",fmt::ptr(this));
         #endif
         if(_capacity > 0){
             free(_data);

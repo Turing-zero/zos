@@ -17,9 +17,9 @@ using endpoint=asio::ip::udp::endpoint;
 using address = asio::ip::address;
 class socket{
 public:
-    socket():_socket(__io::GetInstance(),asio::ip::udp::v4()){}
+    socket():_socket(*__io::GetInstance(),asio::ip::udp::v4()){}
     socket(const asio::ip::udp::endpoint& ep,const __callback_type& f = {}):socket(ep,nullptr,f){}
-    socket(const asio::ip::udp::endpoint& ep,const char* multicast_address,const __callback_type& f = {}):_listen_ep(ep),_socket(__io::GetInstance(),ep.protocol()){
+    socket(const asio::ip::udp::endpoint& ep,const char* multicast_address,const __callback_type& f = {}):_listen_ep(ep),_socket(*__io::GetInstance(),ep.protocol()){
         if(multicast_address!=nullptr && multicast_address!=""){
             _socket.set_option(asio::ip::udp::socket::reuse_address(true));
             _socket.set_option(asio::ip::multicast::join_group(asio::ip::address::from_string(multicast_address)));

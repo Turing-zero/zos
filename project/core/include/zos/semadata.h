@@ -58,6 +58,20 @@ public:
             }
         #endif
     }
+    virtual void pop(Data* p=nullptr) override{
+        if(p!= nullptr){
+            std::unique_lock<std::shared_mutex> lock(_mutex);
+            p->store(_start->_data,_start->_size);
+        }
+        _start = _start->_next;
+        _size--;
+        #ifdef ZOS_DEBUG
+            zos::log("{} ZOS DataQueue finish pop() ,size={},capa={}\n",fmt::ptr(this),_size,_capacity);
+            if(_size < 0){
+                zos::log("{} size < 0 after pop({}). _size={}, _capacity={}\n",fmt::ptr(this),fmt::ptr(p),_size,_capacity);
+            }
+        #endif
+    }
     virtual void store(const Data& data){
         store(data.data(),data._size);
     }
@@ -112,6 +126,10 @@ public:
         #endif
     };
 //    SemaData(const SemaData&) = delete;
+    virtual void pop(Data* p=nullptr){
+        _semaphore.acquire();
+        _data.pop(p);
+    }
     virtual void pop(Data& p) override{
         _semaphore.acquire();
         _data.pop(p);

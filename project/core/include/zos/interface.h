@@ -9,6 +9,7 @@ public:
     virtual ~IData() = default;
 //    IData(const IData&) = delete;
     virtual void pop(Data&) = 0;
+    virtual void pop(Data*) = 0;
     virtual void store(const void* const data,unsigned long size) = 0;
 };
 class ISema{

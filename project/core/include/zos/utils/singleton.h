@@ -1,20 +1,24 @@
-#ifndef __ZOS_SINGLETON_H__
-#define __ZOS_SINGLETON_H__
-
-template <typename SingletonClass >
+#ifndef __SINGLETON_H__
+#define __SINGLETON_H__
+#include <type_traits>
+template <typename T, typename D = T>
 class Singleton{
+    friend D;
+    static_assert(std::is_base_of_v<T, D>, "T should be a base type for D");
 public:
-	static SingletonClass& GetInstance(){
-		static SingletonClass instance;
-		return instance;
-	}
-	// SingletonClass& operator ->() { return Instance(); }
-	// const SingletonClass& operator ->() const { return Instance(); }
+    static T* instance();
+    static T* GetInstance(){ return instance(); }
+    static T* _(){ return instance(); }
 private:
-	Singleton() = default;
-	~Singleton() = default;
-	Singleton(Singleton &other) = delete;
-	void operator=(const Singleton &) = delete;
+    Singleton() = default;
+    ~Singleton() = default;
+    Singleton( const Singleton& ) = delete;
+    Singleton& operator=( const Singleton& ) = delete;
 };
 
-#endif // __ZOS_SINGLETON_H__
+template <typename T, typename D>
+T* Singleton<T, D>::instance(){
+    static D inst;
+    return &inst;
+}
+#endif // __SINGLETON_H__

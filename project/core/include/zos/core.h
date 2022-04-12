@@ -18,7 +18,6 @@
 #include "zos/meta.h"
 #include "zos/socket.h"
 
-
 namespace zos{
 class SubscriberBase;
 class Publisher;
@@ -43,6 +42,9 @@ public:
     void get(Data& data){
         _data->pop(data);
     }
+    void get(Data* data=nullptr){
+        _data->pop(data);
+    }
     bool try_get(Data& data){
         auto res = _data->try_pop(data);
         return res;
@@ -51,13 +53,12 @@ protected:
     bool add_task(){
         if(_callback){
             zos::Data data;
-            zos::log("temp data ptr : {}",fmt::ptr(&data));
             auto res = try_get(data);
             if(!res){
                 zos::log("error on function add_task, no data received.");
                 return false;
             }
-            manager::GetInstance().pool.enqueue(_callback,std::move(data));
+            manager::GetInstance()->pool.enqueue(_callback,std::move(data));
         }
         return true;
     }
@@ -77,6 +78,9 @@ class Publisher{
 public:
     Publisher(const std::string& msg):_msg(msg){}
     void publish(const void* data = nullptr, const unsigned long size = 0){
+        #ifdef ZOS_PLUGIN_DEBUG
+        zos::log("trigger publish -> receiver nums:{}",_subscribers.size());
+        #endif
         std::shared_lock s_lock(_mutex_subscriber);
         for(auto s:_subscribers){
             s->_data->store(data,size);
@@ -91,6 +95,9 @@ public:
     void link(Ts... subs){
         std::unique_lock u_lock(this->_mutex_subscriber);
         _subscribers.insert(_subscribers.end(),{static_cast<SubscriberBase*>(subs)...});
+        #ifdef ZOS_PLUGIN_DEBUG
+        zos::log("Publisher link() : ",fmt::ptr(static_cast<SubscriberBase*>(subs))...);
+        #endif
     }
 private:
     std::vector<SubscriberBase*> _subscribers = {};
