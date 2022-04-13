@@ -17,6 +17,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
 
 if(ZOS_DEBUG)
     add_definitions(-DZOS_DEBUG)
+    add_definitions(-DZOS_PLUGIN_DEBUG)
+    add_definitions(-DZOS_THREADPOOL_DEBUG)
 endif()
 
 find_package(fmt REQUIRED)

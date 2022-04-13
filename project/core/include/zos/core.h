@@ -54,8 +54,11 @@ protected:
         if(_callback){
             zos::Data data;
             auto res = try_get(data);
+            #ifdef ZOS_PLUGIN_DEBUG
+            zos::log("add_task data:{},s:{}\n",fmt::ptr(&data),data.size());
+            #endif
             if(!res){
-                zos::log("error on function add_task, no data received.");
+                zos::log("error on function add_task, no data received.\n");
                 return false;
             }
             manager::GetInstance()->pool.enqueue(_callback,std::move(data));
@@ -79,7 +82,7 @@ public:
     Publisher(const std::string& msg):_msg(msg){}
     void publish(const void* data = nullptr, const unsigned long size = 0){
         #ifdef ZOS_PLUGIN_DEBUG
-        zos::log("trigger publish -> receiver nums:{}",_subscribers.size());
+        zos::log("trigger publish -> receiver nums:{}\n",_subscribers.size());
         #endif
         std::shared_lock s_lock(_mutex_subscriber);
         for(auto s:_subscribers){

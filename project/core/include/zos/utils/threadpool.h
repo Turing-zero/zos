@@ -2,6 +2,10 @@
 #ifndef THREAD_POOL_H
 #define THREAD_POOL_H
 
+#ifdef ZOS_THREADPOOL_DEBUG
+#include "zos/log.h"
+#endif
+
 #include <vector>
 #include <queue>
 #include <memory>
@@ -29,7 +33,7 @@ private:
     std::condition_variable condition;
     bool stop;
 };
- 
+
 // the constructor just launches some amount of workers
 inline ThreadPool::ThreadPool(size_t threads):stop(false){
     for(size_t i = 0;i<threads;++i){
@@ -65,6 +69,9 @@ auto ThreadPool::enqueue(F&& f, Args&&... args) -> std::future<typename std::res
             throw std::runtime_error("enqueue on stopped ThreadPool");
         tasks.emplace([task](){ (*task)(); });
     }
+    #ifdef ZOS_THREADPOOL_DEBUG
+    zos::log("enqueue task totalsize {}\n",tasks.size());
+    #endif
     condition.notify_one();
     return res;
 }

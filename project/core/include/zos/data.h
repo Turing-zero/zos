@@ -1,7 +1,7 @@
 #ifndef __ZOS_DATA_H__
 #define __ZOS_DATA_H__
 
-#include <cstdlib>
+#include <cstring>
 #include <mutex>
 #include <shared_mutex>
 

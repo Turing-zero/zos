@@ -59,8 +59,8 @@ public:
         #endif
     }
     virtual void pop(Data* p=nullptr) override{
+        std::unique_lock<std::shared_mutex> lock(_mutex);
         if(p!= nullptr){
-            std::unique_lock<std::shared_mutex> lock(_mutex);
             p->store(_start->_data,_start->_size);
         }
         _start = _start->_next;

@@ -4,7 +4,7 @@
 #include <array>
 #include <asio.hpp>
 #include <fmt/core.h>
-
+#include <iostream>
 #include "zos/meta.h"
 
 #include "utils/singleton.h"
@@ -29,7 +29,6 @@ public:
         }
         std::error_code ec;
         _socket.bind(_listen_ep,ec);
-        std::cout << fmt::format("first output ec {}:{}",ec.value(),ec.message()) << std::endl;
         if(ec.value() != 0){
             std::cerr << fmt::format("get error {}:{}",ec.value(),ec.message()) << std::endl;
         }
@@ -48,7 +47,6 @@ public:
     bool try_bind(){
         std::error_code ec;
         _socket.bind(_listen_ep,ec);
-        std::cout << fmt::format("first output ec {}:{}",ec.value(),ec.message()) << std::endl;
         if(ec.value() != 0){
             std::cerr << fmt::format("get error {}:{}",ec.value(),ec.message()) << std::endl;
             return false;
@@ -59,8 +57,11 @@ public:
         return true;
     }
     // use for sender
-    void send_to(const std::string& str,const asio::ip::udp::endpoint& endpoint){
-        _socket.send_to(asio::buffer(str.c_str(),str.size()),endpoint);
+    void send_to(const std::string& str,const asio::ip::udp::endpoint& ep){
+        send_to(str.c_str(),str.size(),ep);
+    }
+    void send_to(const void* p,const size_t size,const asio::ip::udp::endpoint& ep){
+        _socket.send_to(asio::buffer(p,size),ep);
     }
 private:
     void handle_receive_from(const std::error_code &ec, size_t bytes_recvd){

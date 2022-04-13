@@ -5,18 +5,25 @@
 #include <fmt/chrono.h>
 #include <string_view>
 #include <ctime>
+#include <mutex>
+#include "zos/utils/singleton.h"
 namespace zos{
 namespace __impl{
+typedef Singleton<std::mutex> LogMutex;
 template<typename... Ts>
 struct __Log{
     __Log(std::string_view s,Ts&&... ts,const std::source_location& lo=std::source_location::current()){
-        print_timestamp();
         std::string total_filename{lo.file_name()};
         auto found = total_filename.find_last_of('/');
         std::string filename{found!=std::string::npos ? total_filename.substr(found+1) : std::move(total_filename)};
         // fmt::print("{}({}:{})`{}`:",filename,lo.line(),lo.column(),lo.function_name());
-        fmt::print("{}({}:{}):",filename,lo.line(),lo.column());
-        fmt::print(s,ts...);
+        {
+            std::scoped_lock<std::mutex> lock(*LogMutex::_());
+            print_timestamp();
+            fmt::print("{}({}:{}):",filename,lo.line(),lo.column());
+            fmt::print(s,ts...);
+        }
+        fflush(stdout);
     }
     static void print_timestamp(){
         auto milli = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count()%1000000;

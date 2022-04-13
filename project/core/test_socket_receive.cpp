@@ -11,5 +11,5 @@ int main(){
     int port = 30001;
     zos::udp::endpoint listen_ep(zos::udp::address::from_string("0.0.0.0"),30001);
     zos::udp::socket socket(listen_ep,"233.233.233.233",_cb);
-    return zos::__io::GetInstance().run();
+    return zos::__io::GetInstance()->run();
 }
