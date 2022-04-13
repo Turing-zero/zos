@@ -65,7 +65,6 @@ public:
     }
 private:
     void handle_receive_from(const std::error_code &ec, size_t bytes_recvd){
-        std::cout << fmt::format("output ec {}:{}",ec.value(),ec.message()) << std::endl;
         if (ec.value() == 0){
             if(_callback) std::invoke(_callback,_data.data(),bytes_recvd);
             _socket.async_receive_from(asio::buffer(_data,MAX_LENGTH),_received_ep
