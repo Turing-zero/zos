@@ -1,7 +1,8 @@
 #include <iostream>
 #include <string>
 #include "zos/socket.h"
-
+#include "zos/socketplugin.h"
+#include "zos.pb.h"
 void _cb(const void* p,size_t lens){
     std::string s(static_cast<const char*>(p),lens);
     std::cout << "marktest : " << s << std::endl;
@@ -9,7 +10,12 @@ void _cb(const void* p,size_t lens){
 
 int main(){
     int port = 30001;
-    zos::udp::endpoint listen_ep(zos::udp::address::from_string("0.0.0.0"),30001);
-    zos::udp::socket socket(listen_ep,"233.233.233.233",_cb);
-    return zos::__io::GetInstance()->run();
+    zos::udp::Plugin<zos::pb::Msg4Test> udp(port,_cb);
+    std::thread t([]{
+        std::cout << "before" << std::endl;
+        zos::__io::GetInstance()->run();
+        std::cout << "after" << std::endl;
+    });
+    t.join();
+    return 0;//zos::__io::GetInstance()->run();
 }

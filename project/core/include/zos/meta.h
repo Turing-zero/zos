@@ -6,6 +6,11 @@ namespace zos{
 namespace concepts{
 template<typename T,typename... Args>
 concept are_convertiable = std::conjunction_v<std::is_convertible<Args,T>...>;
+template<typename T>
+concept Serializable = requires(T t,void* p,size_t size){
+    { t.ByteSize() } -> std::convertible_to<std::size_t>;
+    { t.SerializeToArray(p,size) } -> std::convertible_to<bool>;
+};
 }
 namespace meta{
     using socket_callback_type = std::function<void(const void*,size_t)>;
