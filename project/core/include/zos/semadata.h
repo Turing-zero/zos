@@ -12,16 +12,9 @@
 
 #include "zos/data.h"
 
-
-#ifndef ZOS_USE_CUSTOM_SEMAPHORE
 #include <semaphore>
-using Semaphore = std::counting_semaphore;
-#else
-#include "zos/semaphore.h"
 template<unsigned int c=std::numeric_limits<unsigned int>::max()>
-using Semaphore = zos::SemaphoreT<c>;
-
-#endif // ZOS_USE_DEFAULT_SEMAPHORE
+using Semaphore = std::counting_semaphore<c>;
 
 namespace zos{
 template<unsigned int _max_capacity=std::numeric_limits<unsigned int>::max()>

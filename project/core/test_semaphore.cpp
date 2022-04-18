@@ -2,12 +2,12 @@
 #include <chrono>
 using namespace std::chrono_literals;
 
-Semaphore<> s(0);
+Semaphore<100> s(0);
 void pong(){
     static int count=0;
     // while(!_t.stop_requested()){
     while(true){
-        if(s.try_acquire_for(10)){
+        if(s.try_acquire_for(1000ms)){
             zos::log("get {} from pong\n",count++);
             std::this_thread::sleep_for(500ms);
         }else{
