@@ -10,12 +10,14 @@ void _cb(const void* p,size_t lens){
 
 int main(){
     int port = 30001;
-    zos::udp::Plugin<zos::pb::Msg4Test> udp(port,_cb);
-    std::thread t([]{
-        std::cout << "before" << std::endl;
-        zos::__io::GetInstance()->run();
-        std::cout << "after" << std::endl;
-    });
-    t.join();
-    return 0;//zos::__io::GetInstance()->run();
+    asio::ip::udp::endpoint receiver_endpoint(asio::ip::address::from_string("0.0.0.0"),port);
+
+    zos::udp::Plugin<zos::pb::Msg4Test> udp(receiver_endpoint,"233.233.233.233",_cb);
+    // std::thread t([]{
+    //     std::cout << "before" << std::endl;
+    //     zos::__io::GetInstance()->run();
+    //     std::cout << "after" << std::endl;
+    // });
+    // t.join();
+    return zos::__io::GetInstance()->run();
 }

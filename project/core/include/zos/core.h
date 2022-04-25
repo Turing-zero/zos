@@ -33,7 +33,7 @@ class SubscriberBase{
 protected:
     using __callback_type = zos::meta::callback_type;
 public:
-    SubscriberBase(const std::string& msg,const __callback_type& f = {}):_msg(msg),_data(nullptr){
+    SubscriberBase(const std::string& msg,const __callback_type& f = {}):_data(nullptr),_msg(msg){
         if(f){
             _callback = std::bind(f,std::placeholders::_1);
         }

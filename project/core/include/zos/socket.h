@@ -41,6 +41,9 @@ public:
         _socket.set_option(asio::ip::udp::socket::reuse_address(true));
         _socket.set_option(asio::ip::multicast::join_group(asio::ip::address::from_string(multicast_address)));
     }
+    void set_interface(const char* if_address){
+        _socket.set_option(asio::ip::multicast::outbound_interface(asio::ip::address_v4::from_string(if_address)));
+    }
     void set_callback(const __callback_type& f){
         _callback = std::bind(f,std::placeholders::_1,std::placeholders::_2);
     }

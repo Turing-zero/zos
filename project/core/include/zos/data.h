@@ -16,7 +16,7 @@ public:
         zos::log("{} ZOS Data constructor\n",fmt::ptr(this));
         #endif
     }
-    Data(const Data& data){
+    Data(const Data& data):DataNode(){
         #ifdef ZOS_DEBUG
         zos::log("{} COPY ZOS Data constructor from {}\n",fmt::ptr(this),fmt::ptr(&data));
         #endif
