@@ -1,18 +1,15 @@
 syntax = "proto3";
-
 package zos.pb;
-message Pack{
-    enum Type{
-        PB=0;
-        JSON=1;
-        JSON_CBOR=2;
-    }
-    Type type=1;
-    string name=2;
-    bytes data=3;
+message Msg{
+    string name = 1;
+    string publisher = 2;
+    repeated string subscribers = 3;
 }
-
-message Msg4Test{
-    string name=1;
-    repeated float nums=2;
+message EndPoint{
+    string address = 1;
+    int32 port = 2;
+}
+message State{
+    EndPoint ep = 1;
+    repeated Msg msgs = 2;
 }

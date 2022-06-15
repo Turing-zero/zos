@@ -81,6 +81,8 @@ test_node
 test_node2
 )
 
+get_pb_file(PB_HEADER PB_CPP zos_test zos)
+
 foreach(test_file ${TEST_FILES})
     file(RELATIVE_PATH test_file_name ${CMAKE_CURRENT_SOURCE_DIR} ${test_file})
     string( REPLACE ".cpp" "" test_name ${test_file_name} )
@@ -92,8 +94,7 @@ foreach(test_file ${TEST_FILES})
     set(addition_files)
     set(addition_libs)
 
-    if(test_name STREQUAL "test_pb")
-        get_pb_file(PB_HEADER PB_CPP zos)
+    if(test_name MATCHES "test_pb")
         file(GLOB addition_files 
             ${PB_HEADER}
             ${PB_CPP}

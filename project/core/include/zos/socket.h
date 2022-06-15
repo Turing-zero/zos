@@ -13,7 +13,7 @@ namespace zos{
 using __io = Singleton<asio::io_context>;
 namespace udp{
 using __callback_type = zos::meta::socket_callback_type;
-using endpoint=asio::ip::udp::endpoint;
+using endpoint = asio::ip::udp::endpoint;
 using address = asio::ip::address;
 class socket{
 public:

@@ -2,7 +2,7 @@
 #include <string>
 #include "zos/socket.h"
 #include "zos/socketplugin.h"
-#include "zos.pb.h"
+#include "zos_test.pb.h"
 void _cb(const void* p,size_t lens){
     std::string s(static_cast<const char*>(p),lens);
     std::cout << "marktest : " << s << std::endl;
