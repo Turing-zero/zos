@@ -6,8 +6,7 @@
 #include <fmt/core.h>
 #include <iostream>
 #include "zos/meta.h"
-
-#include "utils/singleton.h"
+#include "zos/utils/singleton.h"
 
 namespace zos{
 using __io = Singleton<asio::io_context>;
@@ -17,9 +16,9 @@ using endpoint = asio::ip::udp::endpoint;
 using address = asio::ip::address;
 class socket{
 public:
-    socket():_socket(*__io::GetInstance(),asio::ip::udp::v4()){}
+    socket():_socket(*__io::_(),asio::ip::udp::v4()){}
     socket(const asio::ip::udp::endpoint& ep,const __callback_type& f = {}):socket(ep,nullptr,f){}
-    socket(const asio::ip::udp::endpoint& ep,const char* multicast_address,const __callback_type& f = {}):_listen_ep(ep),_socket(*__io::GetInstance(),ep.protocol()){
+    socket(const asio::ip::udp::endpoint& ep,const char* multicast_address,const __callback_type& f = {}):_listen_ep(ep),_socket(*__io::_(),ep.protocol()){
         if(multicast_address!=nullptr && multicast_address!=""){
             _socket.set_option(asio::ip::udp::socket::reuse_address(true));
             _socket.set_option(asio::ip::multicast::join_group(asio::ip::address::from_string(multicast_address)));
@@ -30,7 +29,7 @@ public:
         std::error_code ec;
         _socket.bind(_listen_ep,ec);
         if(ec.value() != 0){
-            std::cerr << fmt::format("get error {}:{}",ec.value(),ec.message()) << std::endl;
+            std::cerr << fmt::format("get error11 {}:{}",ec.value(),ec.message()) << std::endl;
         }
         _socket.async_receive_from(asio::buffer(_data,MAX_LENGTH),_received_ep
             , std::bind(&socket::handle_receive_from, this, std::placeholders::_1, std::placeholders::_2)
@@ -68,13 +67,14 @@ public:
     }
 private:
     void handle_receive_from(const std::error_code &ec, size_t bytes_recvd){
+        std::cout << "receive ep : " << _received_ep << std::endl;
         if (ec.value() == 0){
             if(_callback) std::invoke(_callback,_data.data(),bytes_recvd);
             _socket.async_receive_from(asio::buffer(_data,MAX_LENGTH),_received_ep
                 , std::bind(&socket::handle_receive_from, this, std::placeholders::_1, std::placeholders::_2)
             );
         }else{
-            std::cerr << fmt::format("get error {}:{}",ec.value(),ec.message()) << std::endl;
+            std::cerr << fmt::format("get error222 {}:{}",ec.value(),ec.message()) << std::endl;
         }
     }
 private:

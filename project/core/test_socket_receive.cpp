@@ -7,8 +7,7 @@ void _cb(const void* p,size_t lens){
     std::string s(static_cast<const char*>(p),lens);
     std::cout << "marktest : " << s << std::endl;
 }
-
-int main(){
+void test1(){
     int port = 30001;
     asio::ip::udp::endpoint receiver_endpoint(asio::ip::address::from_string("0.0.0.0"),port);
 
@@ -19,5 +18,19 @@ int main(){
     //     std::cout << "after" << std::endl;
     // });
     // t.join();
-    return zos::__io::GetInstance()->run();
+    zos::__io::GetInstance()->run();
+}
+void test2(){
+    int port = 30001;
+    asio::ip::udp::endpoint receiver_endpoint(asio::ip::address::from_string("0.0.0.0"),port);
+
+    zos::udp::socket socket(receiver_endpoint,"233.233.233.233",_cb);
+    // zos::udp::socket socket(receiver_endpoint,_cb);
+
+    zos::__io::_()->run();
+}
+int main(){
+    // test1();
+    test2();
+    return 0;
 }
