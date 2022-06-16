@@ -11,7 +11,7 @@ class manager{
     static constexpr const int default_port = 23333;
 public:
     manager(const char* _if=default_interface,const char* _address=default_mc_address,const int _port=default_port):_interface(_if),_mc_address(_address),_port(_port){
-        _write.set_interface(_interface.c_str());
+        _write.set_interface(zos::udp::address::from_string(_interface));
         // _read.
         _state_send = std::thread([this]{
             int count = 0;

@@ -12,7 +12,7 @@ class Plugin{
 public:
     Plugin(){};
     Plugin(const char* multicast_address){
-        _socket.join_multicast(multicast_address);
+        _socket.join_multicast(zos::udp::address::from_string(multicast_address));
     }
     Plugin(int port,const zos::udp::__callback_type& f={}):Plugin(zos::udp::endpoint(zos::udp::address::from_string("0.0.0.0"),port),nullptr,f){}
     Plugin(const zos::udp::endpoint& ep,const zos::udp::__callback_type& f = {}):Plugin(ep,nullptr,f){}

@@ -14,15 +14,12 @@ namespace udp{
 using __callback_type = zos::meta::socket_callback_type;
 using endpoint = asio::ip::udp::endpoint;
 using address = asio::ip::address;
+using address_v4 = asio::ip::address_v4;
 class socket{
 public:
     socket():_socket(*__io::_(),asio::ip::udp::v4()){}
-    socket(const asio::ip::udp::endpoint& ep,const __callback_type& f = {}):socket(ep,nullptr,f){}
-    socket(const asio::ip::udp::endpoint& ep,const char* multicast_address,const __callback_type& f = {}):_listen_ep(ep),_socket(*__io::_(),ep.protocol()){
-        if(multicast_address!=nullptr && multicast_address!=""){
-            _socket.set_option(asio::ip::udp::socket::reuse_address(true));
-            _socket.set_option(asio::ip::multicast::join_group(asio::ip::address::from_string(multicast_address)));
-        }
+    ~socket() = default;
+    bool bind(const asio::ip::udp::endpoint& _listen_ep,const __callback_type& f = {}){
         if(f){
             _callback = std::bind(f,std::placeholders::_1,std::placeholders::_2);
         }
@@ -30,18 +27,27 @@ public:
         _socket.bind(_listen_ep,ec);
         if(ec.value() != 0){
             std::cerr << fmt::format("get error11 {}:{}",ec.value(),ec.message()) << std::endl;
+            return false;
         }
         _socket.async_receive_from(asio::buffer(_data,MAX_LENGTH),_received_ep
             , std::bind(&socket::handle_receive_from, this, std::placeholders::_1, std::placeholders::_2)
         );
+        return true;
     }
-    ~socket() = default;
-    void join_multicast(const char* multicast_address){
+    void join_multicast(const asio::ip::address& multicast_address,const asio::ip::address& if_address = asio::ip::address_v4::any()){
         _socket.set_option(asio::ip::udp::socket::reuse_address(true));
-        _socket.set_option(asio::ip::multicast::join_group(asio::ip::address::from_string(multicast_address)));
+        _socket.set_option(asio::ip::multicast::enable_loopback(true));
+        _socket.set_option(asio::ip::multicast::join_group(multicast_address.to_v4(),if_address.to_v4()));
     }
-    void set_interface(const char* if_address){
-        _socket.set_option(asio::ip::multicast::outbound_interface(asio::ip::address_v4::from_string(if_address)));
+    void set_interface(const asio::ip::address& if_address){
+        auto _if = asio::ip::multicast::outbound_interface(if_address.to_v4());
+        // std::cout << "set interface " << _if.ipv4_value_ << std::endl;
+        _socket.set_option(_if);
+    }
+    void set_interface(const int if_num){
+        auto _if = asio::ip::multicast::outbound_interface(if_num);
+        // std::cout << "set interface " << _if << std::endl;
+        _socket.set_option(_if);
     }
     void set_callback(const __callback_type& f){
         _callback = std::bind(f,std::placeholders::_1,std::placeholders::_2);
