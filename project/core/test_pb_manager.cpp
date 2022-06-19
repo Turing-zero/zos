@@ -2,9 +2,8 @@
 #include "zos/log.h"
 #include "zos/socketmanager.h"
 int main(){
-    zos::log("test\n");
-    zos::udp::manager manager("127.0.0.1");
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-    zos::log("test2\n");
+    zos::udp::manager::_();
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    zos::log("end of main func\n");
     return 0;
 }
