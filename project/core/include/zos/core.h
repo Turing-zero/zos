@@ -17,17 +17,15 @@
 #include "zos/socket.h"
 
 namespace zos{
+using __callback_type = zos::meta::callback_type;
 class SubscriberBase;
 class Publisher;
 class Pool:public Singleton<Pool>,public ThreadPool{
 public:
     Pool():ThreadPool(zos::config::threadpool_nums){}
-private:
     friend SubscriberBase;
 };
 class SubscriberBase{
-protected:
-    using __callback_type = zos::meta::callback_type;
 public:
     SubscriberBase(const std::string& msg,const __callback_type& f = {}):_data(nullptr),_msg(msg){
         if(f){
@@ -107,7 +105,7 @@ public:
         zos::log("Publisher link() : ",fmt::ptr(static_cast<SubscriberBase*>(subs))...);
         #endif
     }
-private:
+protected:
     std::set<SubscriberBase*> _subscribers = {};
     mutable std::shared_mutex _mutex_subscriber;
     const std::string _msg;
