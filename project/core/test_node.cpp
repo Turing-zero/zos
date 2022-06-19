@@ -88,6 +88,8 @@ int main()
     c.start();
     b.start();
     a.start();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    a.unlink(&b,&c);
     a.join();
     b.join();
     c.join();

@@ -1,9 +1,7 @@
 #ifndef ZOSCORE_H
 #define ZOSCORE_H
 #include <string>
-#include <map>
-#include <list>
-#include <tuple>
+#include <set>
 
 #include <typeinfo>
 
@@ -21,14 +19,12 @@
 namespace zos{
 class SubscriberBase;
 class Publisher;
-class Manager{
+class Pool:public Singleton<Pool>,public ThreadPool{
 public:
-    Manager():pool(zos::config::threadpool_nums){}
+    Pool():ThreadPool(zos::config::threadpool_nums){}
 private:
-    ThreadPool pool;
     friend SubscriberBase;
 };
-using manager = Singleton<Manager>;
 class SubscriberBase{
 protected:
     using __callback_type = zos::meta::callback_type;
@@ -61,7 +57,7 @@ protected:
                 zos::log("error on function add_task, no data received.\n");
                 return false;
             }
-            manager::GetInstance()->pool.enqueue(_callback,std::move(data));
+            Pool::_()->enqueue(_callback,std::move(data));
         }
         return true;
     }
@@ -97,32 +93,25 @@ public:
     requires zos::concepts::are_convertiable<SubscriberBase*,Ts...>
     void link(Ts... subs){
         std::unique_lock u_lock(this->_mutex_subscriber);
-        _subscribers.insert(_subscribers.end(),{static_cast<SubscriberBase*>(subs)...});
+        _subscribers.insert({static_cast<SubscriberBase*>(subs)...});
+        #ifdef ZOS_PLUGIN_DEBUG
+        zos::log("Publisher link() : ",fmt::ptr(static_cast<SubscriberBase*>(subs))...);
+        #endif
+    }
+    template<typename... Ts>
+    requires zos::concepts::are_convertiable<SubscriberBase*,Ts...>
+    void unlink(Ts... subs){
+        std::unique_lock u_lock(this->_mutex_subscriber);
+        _subscribers.erase({static_cast<SubscriberBase*>(subs)...});
         #ifdef ZOS_PLUGIN_DEBUG
         zos::log("Publisher link() : ",fmt::ptr(static_cast<SubscriberBase*>(subs))...);
         #endif
     }
 private:
-    std::vector<SubscriberBase*> _subscribers = {};
+    std::set<SubscriberBase*> _subscribers = {};
     mutable std::shared_mutex _mutex_subscriber;
     const std::string _msg;
 };
-// class NodeManager{
-// public:
-//     NodeManager(){
-//         _receiver.join_multicast(multicast_address);
-//         _receiver.set_callback(std::bind(&NodeManager::_cb,this,std::placeholders::_1,std::placeholders::_2));
-//     }
-// private:
-//     void _cb(const void* p,size_t lens){
-//         std::string s(static_cast<const char*>(p),lens);
-//         std::cout << "marktest : " << s << std::endl;
-//     }
-//     zos::udp::socket _sender;
-//     zos::udp::socket _receiver;
-//     static constexpr char multicast_address[]="233.233.233.233";
-//     static constexpr int multicast_port=23233;
-// };
 
 } // namespace zos
 

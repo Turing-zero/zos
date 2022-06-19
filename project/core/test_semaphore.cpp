@@ -2,7 +2,7 @@
 #include <chrono>
 using namespace std::chrono_literals;
 
-Semaphore<100> s(0);
+zos::Semaphore<1> s(0);
 void pong(){
     static int count=0;
     // while(!_t.stop_requested()){

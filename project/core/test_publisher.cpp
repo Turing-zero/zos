@@ -11,16 +11,19 @@ int main(){
         zos::Data data;
         while(true){
             auto res = s.try_get(data);
-            zos::log("res : {}. data_size={}\n",res,data.size());
+            std::string s(static_cast<const char*>(data.data()),data.size());
+            zos::log("res : {}. data_size={}, s={}\n",res,data.size(),s);
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     });
     std::thread t2([&]{
         int count = 0;
         while(true){
-            p.publish(nullptr,0);
+            std::string s = fmt::format("format string:{}",count);
+            zos::log("publish : {}\n",count++);
+            p.publish(s.c_str(),s.size());
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
-            if(++count > 10) break;
+            if(count > 6) break;
         }
     });
     t1.join();

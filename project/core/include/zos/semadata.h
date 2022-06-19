@@ -12,11 +12,11 @@
 
 #include "zos/data.h"
 
-#include <semaphore>
-template<unsigned int c=std::numeric_limits<unsigned int>::max()>
-using Semaphore = std::counting_semaphore<c>;
+#include "zos/semaphore.h"
 
 namespace zos{
+template<unsigned int c=std::numeric_limits<unsigned int>::max()>
+using Semaphore = SemaphoreT<c>;
 template<unsigned int _max_capacity=std::numeric_limits<unsigned int>::max()>
 class DataQueue:public IData{
 public:
