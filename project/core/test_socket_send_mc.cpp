@@ -8,8 +8,7 @@ int main(){
     int count = 0;
     int port = 30001;
     zos::udp::socket socket;
-    socket.set_interface(zos::udp::address::from_string("192.168.31.122"));
-    // socket.join_multicast("233.233.233.233");
+    socket.set_interface(zos::udp::address::from_string("10.12.225.58"));
 
     asio::ip::udp::endpoint receiver_endpoint(zos::udp::address::from_string("233.233.233.233"),port);
 
